@@ -1,0 +1,24 @@
+{
+  "name": "rollup-plugin-output-manifest",
+  "version": "1.0.0",
+  "description": "Rollup plugin for generating an asset manifest",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": [
+    "rollup",
+    "output",
+    "manifest",
+    "json",
+    "asset"
+  ],
+  "author": "happywang <shuizhongyueming@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "rollup": "^1.17.0",
+    "tslib": "^1.10.0",
+    "typescript": "^3.5.3",
+    "utility-types": "^3.7.0"
+  }
+}
