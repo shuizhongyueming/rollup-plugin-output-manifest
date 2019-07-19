@@ -1,9 +1,6 @@
 import { OutputAsset, OutputChunk, OutputBundle, OutputOptions } from "rollup";
 import { NonUndefined } from "utility-types";
 export declare type Bundle = OutputAsset | OutputChunk;
-export interface Manifest {
-    [key: string]: string;
-}
 export interface OutputManifestParam {
     fileName: string;
     nameSuffix?: string;
@@ -11,11 +8,11 @@ export interface OutputManifestParam {
     publicPath?: string;
     basePath?: string;
     outputPath?: string;
-    filter?: (bundle: Bundle) => boolean;
-    map?: (bundle: OutputChunk) => OutputChunk;
-    sort?: (bundleA: OutputChunk, bundleB: OutputChunk) => number;
-    generate?: (bundles: OutputChunk[]) => Manifest;
-    serialize?: (manifest: Manifest) => string;
+    filter?: (chunk: OutputChunk) => boolean;
+    map?: (chunk: OutputChunk) => OutputChunk;
+    sort?: (chunkA: OutputChunk, chunkB: OutputChunk) => number;
+    generate?: (chunks: OutputChunk[]) => object;
+    serialize?: (manifest: object) => string;
 }
 export declare const defaultFilter: NonUndefined<OutputManifestParam["filter"]>;
 export declare const defaultMap: NonUndefined<OutputManifestParam["map"]>;

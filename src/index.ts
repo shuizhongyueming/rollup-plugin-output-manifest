@@ -5,10 +5,6 @@ import { readJSON, writeFile } from "./utils";
 
 export type Bundle = OutputAsset | OutputChunk;
 
-export interface Manifest {
-  [key: string]: string;
-}
-
 export interface OutputManifestParam {
   fileName: string;
   nameSuffix?: string;
@@ -16,29 +12,29 @@ export interface OutputManifestParam {
   publicPath?: string;
   basePath?: string;
   outputPath?: string;
-  filter?: (bundle: Bundle) => boolean;
-  map?: (bundle: OutputChunk) => OutputChunk;
-  sort?: (bundleA: OutputChunk, bundleB: OutputChunk) => number;
-  generate?: (bundles: OutputChunk[]) => Manifest;
-  serialize?: (manifest: Manifest) => string;
+  filter?: (chunk: OutputChunk) => boolean;
+  map?: (chunk: OutputChunk) => OutputChunk;
+  sort?: (chunkA: OutputChunk, chunkB: OutputChunk) => number;
+  generate?: (chunks: OutputChunk[]) => object;
+  serialize?: (manifest: object) => string;
 }
 
 export const defaultFilter: NonUndefined<OutputManifestParam["filter"]> = () =>
   true;
 
-export const defaultMap: NonUndefined<OutputManifestParam["map"]> = bundle =>
-  bundle;
+export const defaultMap: NonUndefined<OutputManifestParam["map"]> = chunk =>
+  chunk;
 
 export const defaultSort: NonUndefined<OutputManifestParam["sort"]> = (
-  bundleA,
-  bundleB
-) => (bundleA.name > bundleB.name ? 1 : -1);
+  chunkA,
+  chunkB
+) => (chunkA.name > chunkB.name ? 1 : -1);
 
 export const defaultGenerate: NonUndefined<
   OutputManifestParam["generate"]
-> = bundles =>
-  bundles.reduce((json, bundle) => {
-    const { name, fileName } = bundle;
+> = chunks =>
+  chunks.reduce((json, chunk) => {
+    const { name, fileName } = chunk;
     return {
       ...json,
       [name]: fileName
@@ -92,10 +88,13 @@ export default function outputManifest(param: OutputManifestParam) {
 
       let chunks = Object.values(bundle)
         // only output chunk, because asset has no attribute name
-        .filter(bundle => typeof (bundle as OutputChunk).name !== "undefined")
-        .filter(filterFunc) as OutputChunk[];
+        .filter(
+          bundle => typeof (bundle as OutputChunk).name !== "undefined"
+        ) as OutputChunk[];
 
-      let jsonObj = generateFunc(chunks.sort(sortFunc).map(mapFunc));
+      chunks = chunks.filter(filterFunc);
+
+      let manifestObj = generateFunc(chunks.sort(sortFunc).map(mapFunc));
       const workspace = process.cwd();
       const filePath = path.resolve(workspace, targetDir, fileName);
       let seed = {};
@@ -108,16 +107,19 @@ export default function outputManifest(param: OutputManifestParam) {
         }
       }
 
-      jsonObj = Object.entries(jsonObj).reduce((seed, [name, fileName]) => {
-        const n = basePath ? path.join(basePath, name) : name;
-        const f = publicPath ? path.join(publicPath, fileName) : fileName;
-        return { ...seed, [`${n}${nameSuffix}`]: f };
-      }, seed);
+      manifestObj = Object.entries(manifestObj).reduce(
+        (seed, [name, fileName]) => {
+          const n = basePath ? path.join(basePath, name) : name;
+          const f = publicPath ? path.join(publicPath, fileName) : fileName;
+          return { ...seed, [`${n}${nameSuffix}`]: f };
+        },
+        seed
+      );
 
-      const manifestJSON = serializeFunc(jsonObj);
+      const manifestStr = serializeFunc(manifestObj);
 
       try {
-        writeFile(filePath, manifestJSON);
+        writeFile(filePath, manifestStr);
         console.log("build manifest json success!");
       } catch (e) {
         throw e;
