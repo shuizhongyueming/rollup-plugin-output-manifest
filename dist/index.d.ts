@@ -19,7 +19,7 @@ export declare const defaultMap: NonUndefined<OutputManifestParam["map"]>;
 export declare const defaultSort: NonUndefined<OutputManifestParam["sort"]>;
 export declare const defaultGenerate: NonUndefined<OutputManifestParam["generate"]>;
 export declare const defaultSerialize: NonUndefined<OutputManifestParam["serialize"]>;
-export default function outputManifest(param: OutputManifestParam): {
+export default function outputManifest(param?: OutputManifestParam): {
     name: string;
     generateBundle: (options: OutputOptions, bundle: OutputBundle) => Promise<void>;
 };

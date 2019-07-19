@@ -4,7 +4,8 @@
   "description": "Rollup plugin for generating an asset manifest",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "test": "mocha"
   },
   "keywords": [
     "rollup",
@@ -16,7 +17,11 @@
   "author": "happywang <shuizhongyueming@gmail.com>",
   "license": "MIT",
   "devDependencies": {
+    "@types/mocha": "^5.2.7",
+    "mocha": "^6.2.0",
+    "rimraf": "^2.6.3",
     "rollup": "^1.17.0",
+    "ts-node": "^8.3.0",
     "tslib": "^1.10.0",
     "typescript": "^3.5.3",
     "utility-types": "^3.7.0"

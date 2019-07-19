@@ -1,7 +1,8 @@
 import { OutputAsset, OutputChunk, OutputBundle, OutputOptions } from "rollup";
 import { NonUndefined } from "utility-types";
 import path from "path";
-import { readJSON, writeFile } from "./utils";
+import { readJSON } from "./utils";
+import fs from "fs";
 
 export type Bundle = OutputAsset | OutputChunk;
 
@@ -19,8 +20,9 @@ export interface OutputManifestParam {
   serialize?: (manifest: object) => string;
 }
 
-export const defaultFilter: NonUndefined<OutputManifestParam["filter"]> = () =>
-  true;
+export const defaultFilter: NonUndefined<
+  OutputManifestParam["filter"]
+> = chunk => chunk.isEntry;
 
 export const defaultMap: NonUndefined<OutputManifestParam["map"]> = chunk =>
   chunk;
@@ -45,7 +47,7 @@ export const defaultSerialize: NonUndefined<
   OutputManifestParam["serialize"]
 > = manifest => JSON.stringify(manifest, null, 2);
 
-export default function outputManifest(param: OutputManifestParam) {
+export default function outputManifest(param?: OutputManifestParam) {
   const {
     fileName = "manifest.json",
     nameSuffix = ".js",
@@ -76,7 +78,7 @@ export default function outputManifest(param: OutputManifestParam) {
 
       if (!targetDir) {
         throw new Error(
-          "please set outputPath, so we can know where to place the json file"
+          "Please set outputPath, so we can know where to place the json file"
         );
       }
 
@@ -119,8 +121,10 @@ export default function outputManifest(param: OutputManifestParam) {
       const manifestStr = serializeFunc(manifestObj);
 
       try {
-        writeFile(filePath, manifestStr);
-        console.log("build manifest json success!");
+        if (!fs.existsSync(targetDir)) {
+          fs.mkdirSync(targetDir, { recursive: true });
+        }
+        await fs.promises.writeFile(filePath, manifestStr);
       } catch (e) {
         throw e;
       }
