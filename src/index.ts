@@ -1,12 +1,13 @@
 import { OutputAsset, OutputChunk, OutputBundle, OutputOptions } from "rollup";
 import { NonUndefined } from "utility-types";
 import path from "path";
-import { readJSON, writeFile } from "./utils";
+import { readJSON } from "./utils";
+import fs from "fs";
 
 export type Bundle = OutputAsset | OutputChunk;
 
 export interface OutputManifestParam {
-  fileName: string;
+  fileName?: string;
   nameSuffix?: string;
   isMerge?: boolean;
   publicPath?: string;
@@ -15,12 +16,18 @@ export interface OutputManifestParam {
   filter?: (chunk: OutputChunk) => boolean;
   map?: (chunk: OutputChunk) => OutputChunk;
   sort?: (chunkA: OutputChunk, chunkB: OutputChunk) => number;
-  generate?: (chunks: OutputChunk[]) => object;
+  generate?: (
+    keyValueDecorator: KeyValueDecorator,
+    seed: object
+  ) => (chunks: OutputChunk[]) => object;
   serialize?: (manifest: object) => string;
 }
 
-export const defaultFilter: NonUndefined<OutputManifestParam["filter"]> = () =>
-  true;
+export type KeyValueDecorator = (k: string, v: string) => object;
+
+export const defaultFilter: NonUndefined<
+  OutputManifestParam["filter"]
+> = chunk => chunk.isEntry;
 
 export const defaultMap: NonUndefined<OutputManifestParam["map"]> = chunk =>
   chunk;
@@ -30,22 +37,23 @@ export const defaultSort: NonUndefined<OutputManifestParam["sort"]> = (
   chunkB
 ) => (chunkA.name > chunkB.name ? 1 : -1);
 
-export const defaultGenerate: NonUndefined<
-  OutputManifestParam["generate"]
-> = chunks =>
+export const defaultGenerate: NonUndefined<OutputManifestParam["generate"]> = (
+  keyValueDecorator,
+  seed
+) => chunks =>
   chunks.reduce((json, chunk) => {
     const { name, fileName } = chunk;
     return {
       ...json,
-      [name]: fileName
+      ...keyValueDecorator(name, fileName)
     };
-  }, {});
+  }, seed);
 
 export const defaultSerialize: NonUndefined<
   OutputManifestParam["serialize"]
 > = manifest => JSON.stringify(manifest, null, 2);
 
-export default function outputManifest(param: OutputManifestParam) {
+export default function outputManifest(param?: OutputManifestParam) {
   const {
     fileName = "manifest.json",
     nameSuffix = ".js",
@@ -76,7 +84,7 @@ export default function outputManifest(param: OutputManifestParam) {
 
       if (!targetDir) {
         throw new Error(
-          "please set outputPath, so we can know where to place the json file"
+          "Please set outputPath, so we can know where to place the json file"
         );
       }
 
@@ -94,10 +102,9 @@ export default function outputManifest(param: OutputManifestParam) {
 
       chunks = chunks.filter(filterFunc);
 
-      let manifestObj = generateFunc(chunks.sort(sortFunc).map(mapFunc));
+      let seed = {};
       const workspace = process.cwd();
       const filePath = path.resolve(workspace, targetDir, fileName);
-      let seed = {};
 
       if (isMerge) {
         try {
@@ -107,20 +114,23 @@ export default function outputManifest(param: OutputManifestParam) {
         }
       }
 
-      manifestObj = Object.entries(manifestObj).reduce(
-        (seed, [name, fileName]) => {
-          const n = basePath ? path.join(basePath, name) : name;
-          const f = publicPath ? path.join(publicPath, fileName) : fileName;
-          return { ...seed, [`${n}${nameSuffix}`]: f };
-        },
-        seed
+      function keyValueDecorator(k: string, v: string) {
+        const n = basePath ? `${basePath}${k}` : k;
+        const f = publicPath ? `${publicPath}${v}` : v;
+        return { [`${n}${nameSuffix}`]: f };
+      }
+
+      let manifestObj = generateFunc(keyValueDecorator, seed)(
+        chunks.sort(sortFunc).map(mapFunc)
       );
 
       const manifestStr = serializeFunc(manifestObj);
 
       try {
-        writeFile(filePath, manifestStr);
-        console.log("build manifest json success!");
+        if (!fs.existsSync(targetDir)) {
+          fs.mkdirSync(targetDir, { recursive: true });
+        }
+        await fs.promises.writeFile(filePath, manifestStr);
       } catch (e) {
         throw e;
       }

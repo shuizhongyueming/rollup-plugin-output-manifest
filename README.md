@@ -54,6 +54,22 @@ Default: `manifest.json`
 
 The manifest filename in your output directory.
 
+### `options.nameSuffix`
+
+Type: `String`
+
+Default: `.js`
+
+The suffix for all keys in the manifest json object.
+
+### `options.isMerge`
+
+Type: `Boolean`
+
+Default: `false`
+
+Merge the exists key/value pair in the target manifest file or just override it.
+
 ### `options.publicPath`
 
 Type: `String`
@@ -89,9 +105,9 @@ Sort chunk before they are passed to `generate`. [OutputChunk typings][1]
 
 ### `options.generate`
 
-Type: `(bundles: OutputChunk[]) => object`
+Type: `(keyValueDecorator: KeyValueDecorator, seed: object) => (chunks: OutputChunk[]) => object`
 
-Default: `(chunks) => chunks.reduce((manifest, {name, fileName}) => ({...manifest, [name]: fileName}), {})`
+Default: `(keyValueDecorator: KeyValueDecorator, seed: object) => (chunks) => chunks.reduce((manifest, {name, fileName}) => ({...manifest, ...keyValueDecorator(name, fileName)}), seed)`
 
 Create the manifest. It can return anything as long as it's serialisable by `JSON.stringify`. [OutputChunk typings][1]
 
