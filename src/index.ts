@@ -7,7 +7,7 @@ import fs from "fs";
 export type Bundle = OutputAsset | OutputChunk;
 
 export interface OutputManifestParam {
-  fileName: string;
+  fileName?: string;
   nameSuffix?: string;
   isMerge?: boolean;
   publicPath?: string;
@@ -16,9 +16,14 @@ export interface OutputManifestParam {
   filter?: (chunk: OutputChunk) => boolean;
   map?: (chunk: OutputChunk) => OutputChunk;
   sort?: (chunkA: OutputChunk, chunkB: OutputChunk) => number;
-  generate?: (chunks: OutputChunk[]) => object;
+  generate?: (
+    keyValueDecorator: KeyValueDecorator,
+    seed: object
+  ) => (chunks: OutputChunk[]) => object;
   serialize?: (manifest: object) => string;
 }
+
+export type KeyValueDecorator = (k: string, v: string) => object;
 
 export const defaultFilter: NonUndefined<
   OutputManifestParam["filter"]
@@ -32,16 +37,17 @@ export const defaultSort: NonUndefined<OutputManifestParam["sort"]> = (
   chunkB
 ) => (chunkA.name > chunkB.name ? 1 : -1);
 
-export const defaultGenerate: NonUndefined<
-  OutputManifestParam["generate"]
-> = chunks =>
+export const defaultGenerate: NonUndefined<OutputManifestParam["generate"]> = (
+  keyValueDecorator,
+  seed
+) => chunks =>
   chunks.reduce((json, chunk) => {
     const { name, fileName } = chunk;
     return {
       ...json,
-      [name]: fileName
+      ...keyValueDecorator(name, fileName)
     };
-  }, {});
+  }, seed);
 
 export const defaultSerialize: NonUndefined<
   OutputManifestParam["serialize"]
@@ -96,10 +102,9 @@ export default function outputManifest(param?: OutputManifestParam) {
 
       chunks = chunks.filter(filterFunc);
 
-      let manifestObj = generateFunc(chunks.sort(sortFunc).map(mapFunc));
+      let seed = {};
       const workspace = process.cwd();
       const filePath = path.resolve(workspace, targetDir, fileName);
-      let seed = {};
 
       if (isMerge) {
         try {
@@ -109,13 +114,14 @@ export default function outputManifest(param?: OutputManifestParam) {
         }
       }
 
-      manifestObj = Object.entries(manifestObj).reduce(
-        (seed, [name, fileName]) => {
-          const n = basePath ? path.join(basePath, name) : name;
-          const f = publicPath ? path.join(publicPath, fileName) : fileName;
-          return { ...seed, [`${n}${nameSuffix}`]: f };
-        },
-        seed
+      function keyValueDecorator(k: string, v: string) {
+        const n = basePath ? `${basePath}${k}` : k;
+        const f = publicPath ? `${publicPath}${v}` : v;
+        return { [`${n}${nameSuffix}`]: f };
+      }
+
+      let manifestObj = generateFunc(keyValueDecorator, seed)(
+        chunks.sort(sortFunc).map(mapFunc)
       );
 
       const manifestStr = serializeFunc(manifestObj);

@@ -2,7 +2,7 @@ import { OutputAsset, OutputChunk, OutputBundle, OutputOptions } from "rollup";
 import { NonUndefined } from "utility-types";
 export declare type Bundle = OutputAsset | OutputChunk;
 export interface OutputManifestParam {
-    fileName: string;
+    fileName?: string;
     nameSuffix?: string;
     isMerge?: boolean;
     publicPath?: string;
@@ -11,9 +11,10 @@ export interface OutputManifestParam {
     filter?: (chunk: OutputChunk) => boolean;
     map?: (chunk: OutputChunk) => OutputChunk;
     sort?: (chunkA: OutputChunk, chunkB: OutputChunk) => number;
-    generate?: (chunks: OutputChunk[]) => object;
+    generate?: (keyValueDecorator: KeyValueDecorator, seed: object) => (chunks: OutputChunk[]) => object;
     serialize?: (manifest: object) => string;
 }
+export declare type KeyValueDecorator = (k: string, v: string) => object;
 export declare const defaultFilter: NonUndefined<OutputManifestParam["filter"]>;
 export declare const defaultMap: NonUndefined<OutputManifestParam["map"]>;
 export declare const defaultSort: NonUndefined<OutputManifestParam["sort"]>;
