@@ -1,0 +1,5 @@
+examples/
+*.spec.ts
+*.spec.d.ts
+*.spec.js
+.mocharc.json
