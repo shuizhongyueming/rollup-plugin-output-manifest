@@ -68,7 +68,7 @@ Type: `Boolean`
 
 Default: `false`
 
-Merge the exists key/value pair in the target manifest file or just override it.
+Merge the existing key/value pair in the target manifest file or just override it.
 
 ### `options.publicPath`
 
