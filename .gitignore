@@ -126,4 +126,4 @@ tags
 # End of https://www.gitignore.io/api/visualstudiocode,vim,node
 
 
-examples/dist/
+**/dist/
