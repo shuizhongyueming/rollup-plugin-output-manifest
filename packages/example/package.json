@@ -2,6 +2,7 @@
   "name": "examples",
   "version": "1.0.0",
   "description": "",
+  "private": true,
   "scripts": {
     "build": "rollup --config rollup.config.js"
   },
