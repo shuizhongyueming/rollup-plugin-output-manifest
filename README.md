@@ -4,7 +4,7 @@ Rollup plugin for generating an chunk manifest. Inspired by [webpack-manifest-pl
 
 ## Install
 
-```
+```shell
 npm install --save-dev rollup-plugin-output-manifest
 ```
 
@@ -14,6 +14,7 @@ In your `rollup.config.js`
 
 ```javascript
 import outputManifest from 'rollup-plugin-output-manifest';
+// or const outputManifest = require('rollup-plugin-output-manifest').default;
 
 export default {
   // ...
@@ -118,6 +119,16 @@ Type: `(manifest: object) => string`
 Default: `(manifest) => JSON.stringify(manifest, null, 2)`
 
 Output manifest file in different format then json (i.e. yaml).
+
+## Contribution
+
+```shell
+$ git clone https://github.com/shuizhongyueming/rollup-plugin-output-manifest.git
+$ cd packages/main
+$ yarn install
+$ yarn build # for build
+$ yarn test # for test
+```
 
 ## License
 
