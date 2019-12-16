@@ -1,6 +1,6 @@
 {
   "name": "rollup-plugin-output-manifest",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Rollup plugin for generating an chunk manifest",
   "main": "dist/index.js",
   "scripts": {
