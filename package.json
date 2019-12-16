@@ -1,0 +1,22 @@
+{
+  "name": "rollup-plugin-output-manifest-repo",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shuizhongyueming/rollup-plugin-output-manifest.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/shuizhongyueming/rollup-plugin-output-manifest/issues"
+  },
+  "homepage": "https://github.com/shuizhongyueming/rollup-plugin-output-manifest#readme",
+  "dependencies": {
+    "lerna": "^3.19.0"
+  }
+}
