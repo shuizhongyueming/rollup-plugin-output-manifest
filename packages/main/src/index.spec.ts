@@ -7,7 +7,8 @@ import rimraf from "rimraf";
 import { readJSON } from "./utils";
 import YAML from "json-to-pretty-yaml";
 
-const distPath = path.resolve(__dirname, "../examples/dist/");
+const srcPath = path.resolve(__dirname, '../../example/');
+const distPath = path.resolve(__dirname, "../../example/dist/");
 const distEntryA = path.resolve(distPath, "pageA.js");
 const distEntryB = path.resolve(distPath, "pageB.js");
 const distEntryC = path.resolve(distPath, "pageC.js");
@@ -28,8 +29,8 @@ describe("outputManifest", function() {
   describe("rollup works", function() {
     it("single entry", async function() {
       await run(
-        { input: "./examples/page-a.js" },
-        { file: "./examples/dist/pageA.js", format: "iife" }
+        { input: `${srcPath}/page-a.js` },
+        { file: `${distPath}/pageA.js`, format: "iife" }
       );
 
       assert(fs.existsSync(distEntryA));
@@ -39,12 +40,12 @@ describe("outputManifest", function() {
       await run(
         {
           input: {
-            pageA: "./examples/page-a.js",
-            pageB: "./examples/page-b.js",
-            pageC: "./examples/page-c.js"
+            pageA: `${srcPath}/page-a.js`,
+            pageB: `${srcPath}/page-b.js`,
+            pageC: `${srcPath}/page-c.js`
           }
         },
-        { dir: "./examples/dist/", format: "commonjs" }
+        { dir: `${srcPath}/dist/`, format: "commonjs" }
       );
 
       assert(fs.existsSync(distEntryA));
@@ -59,14 +60,14 @@ describe("outputManifest", function() {
         await run(
           {
             input: {
-              pageA: "./examples/page-a.js",
-              pageB: "./examples/page-b.js",
-              pageC: "./examples/page-c.js"
+              pageA: `${srcPath}/page-a.js`,
+              pageB: `${srcPath}/page-b.js`,
+              pageC: `${srcPath}/page-c.js`
             },
             plugins: [outputManifest()]
           },
           {
-            dir: "./examples/dist/",
+            dir: `${srcPath}/dist/`,
             entryFileNames: "[name]-[hash].js",
             format: "commonjs"
           }
@@ -77,14 +78,14 @@ describe("outputManifest", function() {
         await run(
           {
             input: {
-              pageA: "./examples/page-a.js",
-              pageB: "./examples/page-b.js",
-              pageC: "./examples/page-c.js"
+              pageA: `${srcPath}/page-a.js`,
+              pageB: `${srcPath}/page-b.js`,
+              pageC: `${srcPath}/page-c.js`
             },
             plugins: [outputManifest()]
           },
           {
-            dir: "./examples/dist/",
+            dir: `${srcPath}/dist/`,
             entryFileNames: "[name]-[hash].js",
             format: "commonjs"
           }
@@ -100,14 +101,14 @@ describe("outputManifest", function() {
         await run(
           {
             input: {
-              pageA: "./examples/page-a.js",
-              pageB: "./examples/page-b.js",
-              pageC: "./examples/page-c.js"
+              pageA: `${srcPath}/page-a.js`,
+              pageB: `${srcPath}/page-b.js`,
+              pageC: `${srcPath}/page-c.js`
             },
             plugins: [outputManifest({ fileName: "assets.json" })]
           },
           {
-            dir: "./examples/dist/",
+            dir: `${srcPath}/dist/`,
             entryFileNames: "[name]-[hash].js",
             format: "commonjs"
           }
@@ -119,14 +120,14 @@ describe("outputManifest", function() {
         await run(
           {
             input: {
-              pageA: "./examples/page-a.js",
-              pageB: "./examples/page-b.js",
-              pageC: "./examples/page-c.js"
+              pageA: `${srcPath}/page-a.js`,
+              pageB: `${srcPath}/page-b.js`,
+              pageC: `${srcPath}/page-c.js`
             },
             plugins: [outputManifest({ nameSuffix: "" })]
           },
           {
-            dir: "./examples/dist/",
+            dir: `${srcPath}/dist/`,
             entryFileNames: "[name]-[hash].js",
             format: "commonjs"
           }
@@ -142,14 +143,14 @@ describe("outputManifest", function() {
         await run(
           {
             input: {
-              pageA: "./examples/page-a.js",
-              pageB: "./examples/page-b.js",
-              pageC: "./examples/page-c.js"
+              pageA: `${srcPath}/page-a.js`,
+              pageB: `${srcPath}/page-b.js`,
+              pageC: `${srcPath}/page-c.js`
             },
             plugins: [outputManifest({ publicPath })]
           },
           {
-            dir: "./examples/dist/",
+            dir: `${srcPath}/dist/`,
             entryFileNames: "[name]-[hash].js",
             format: "commonjs"
           }
@@ -164,14 +165,14 @@ describe("outputManifest", function() {
         await run(
           {
             input: {
-              pageA: "./examples/page-a.js",
-              pageB: "./examples/page-b.js",
-              pageC: "./examples/page-c.js"
+              pageA: `${srcPath}/page-a.js`,
+              pageB: `${srcPath}/page-b.js`,
+              pageC: `${srcPath}/page-c.js`
             },
             plugins: [outputManifest({ basePath })]
           },
           {
-            dir: "./examples/dist/",
+            dir: `${srcPath}/dist/`,
             entryFileNames: "[name]-[hash].js",
             format: "commonjs"
           }
@@ -194,14 +195,14 @@ describe("outputManifest", function() {
         await run(
           {
             input: {
-              pageA: "./examples/page-a.js",
-              pageB: "./examples/page-b.js",
-              pageC: "./examples/page-c.js"
+              pageA: `${srcPath}/page-a.js`,
+              pageB: `${srcPath}/page-b.js`,
+              pageC: `${srcPath}/page-c.js`
             },
             plugins: [outputManifest({ isMerge: true })]
           },
           {
-            dir: "./examples/dist/",
+            dir: `${srcPath}/dist/`,
             entryFileNames: "[name]-[hash].js",
             format: "commonjs"
           }
@@ -215,14 +216,14 @@ describe("outputManifest", function() {
         await run(
           {
             input: {
-              pageA: "./examples/page-a.js",
-              pageB: "./examples/page-b.js",
-              pageC: "./examples/page-c.js"
+              pageA: `${srcPath}/page-a.js`,
+              pageB: `${srcPath}/page-b.js`,
+              pageC: `${srcPath}/page-c.js`
             },
             plugins: [outputManifest({ outputPath })]
           },
           {
-            dir: "./examples/dist/",
+            dir: `${srcPath}/dist/`,
             entryFileNames: "[name]-[hash].js",
             format: "commonjs"
           }
@@ -237,9 +238,9 @@ describe("outputManifest", function() {
         await run(
           {
             input: {
-              pageA: "./examples/page-a.js",
-              pageB: "./examples/page-b.js",
-              pageC: "./examples/page-c.js"
+              pageA: `${srcPath}/page-a.js`,
+              pageB: `${srcPath}/page-b.js`,
+              pageC: `${srcPath}/page-c.js`
             },
             plugins: [
               outputManifest({
@@ -248,7 +249,7 @@ describe("outputManifest", function() {
             ]
           },
           {
-            dir: "./examples/dist/",
+            dir: `${srcPath}/dist/`,
             entryFileNames: "[name]-[hash].js",
             format: "commonjs"
           }
@@ -264,9 +265,9 @@ describe("outputManifest", function() {
         await run(
           {
             input: {
-              pageA: "./examples/page-a.js",
-              pageB: "./examples/page-b.js",
-              pageC: "./examples/page-c.js"
+              pageA: `${srcPath}/page-a.js`,
+              pageB: `${srcPath}/page-b.js`,
+              pageC: `${srcPath}/page-c.js`
             },
             plugins: [
               outputManifest({
@@ -275,7 +276,7 @@ describe("outputManifest", function() {
             ]
           },
           {
-            dir: "./examples/dist/",
+            dir: `${srcPath}/dist/`,
             entryFileNames: "[name]-[hash].js",
             format: "commonjs"
           }
@@ -291,9 +292,9 @@ describe("outputManifest", function() {
         await run(
           {
             input: {
-              pageA: "./examples/page-a.js",
-              pageB: "./examples/page-b.js",
-              pageC: "./examples/page-c.js"
+              pageA: `${srcPath}/page-a.js`,
+              pageB: `${srcPath}/page-b.js`,
+              pageC: `${srcPath}/page-c.js`
             },
             plugins: [
               outputManifest({
@@ -307,7 +308,7 @@ describe("outputManifest", function() {
             ]
           },
           {
-            dir: "./examples/dist/",
+            dir: `${srcPath}/dist/`,
             entryFileNames: "[name]-[hash].js",
             format: "commonjs"
           }
@@ -326,9 +327,9 @@ describe("outputManifest", function() {
         await run(
           {
             input: {
-              pageA: "./examples/page-a.js",
-              pageB: "./examples/page-b.js",
-              pageC: "./examples/page-c.js"
+              pageA: `${srcPath}/page-a.js`,
+              pageB: `${srcPath}/page-b.js`,
+              pageC: `${srcPath}/page-c.js`
             },
             plugins: [
               outputManifest({
@@ -341,7 +342,7 @@ describe("outputManifest", function() {
             ]
           },
           {
-            dir: "./examples/dist/",
+            dir: `${srcPath}/dist/`,
             entryFileNames: "[name]-[hash].js",
             format: "commonjs"
           }
@@ -354,9 +355,9 @@ describe("outputManifest", function() {
         await run(
           {
             input: {
-              pageA: "./examples/page-a.js",
-              pageB: "./examples/page-b.js",
-              pageC: "./examples/page-c.js"
+              pageA: `${srcPath}/page-a.js`,
+              pageB: `${srcPath}/page-b.js`,
+              pageC: `${srcPath}/page-c.js`
             },
             plugins: [
               outputManifest({
@@ -366,7 +367,7 @@ describe("outputManifest", function() {
             ]
           },
           {
-            dir: "./examples/dist/",
+            dir: `${srcPath}/dist/`,
             entryFileNames: "[name]-[hash].js",
             format: "commonjs"
           }
