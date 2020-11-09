@@ -11,6 +11,7 @@ export interface OutputManifestParam {
   nameSuffix?: string;
   isMerge?: boolean;
   publicPath?: string;
+  publicSuffix?: string;
   basePath?: string;
   outputPath?: string;
   filter?: (chunk: OutputChunk) => boolean;
@@ -58,6 +59,7 @@ export default function outputManifest(param?: OutputManifestParam) {
     fileName = "manifest.json",
     nameSuffix = ".js",
     publicPath = "",
+    publicSuffix = "",
     basePath = "",
     isMerge = false,
     outputPath,
@@ -117,7 +119,7 @@ export default function outputManifest(param?: OutputManifestParam) {
       function keyValueDecorator(k: string, v: string) {
         const n = basePath ? `${basePath}${k}` : k;
         const f = publicPath ? `${publicPath}${v}` : v;
-        return { [`${n}${nameSuffix}`]: f };
+        return { [`${n}${nameSuffix}`]: `${f}${publicSuffix}` };
       }
 
       let manifestObj = generateFunc(keyValueDecorator, seed)(
