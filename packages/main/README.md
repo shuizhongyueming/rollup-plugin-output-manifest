@@ -47,7 +47,7 @@ export default {
 };
 ```
 
-The type `Bundle` is an union of OutputChunk[1] and OutputAsset[2]
+The type `Bundle` is an union of [OutputChunk][1] and [OutputAsset][2]
 
 ```typescript
 type Bundle = OutputChunk | OutputAsset;
