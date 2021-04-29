@@ -8,7 +8,9 @@
   },
   "author": "",
   "dependencies": {
-    "rollup": "^1.17.0"
+    "postcss": "^8.2.13",
+    "rollup": "^2.46.0",
+    "rollup-plugin-postcss": "^4.0.0"
   },
   "license": "ISC",
   "devDependencies": {

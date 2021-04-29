@@ -1,15 +1,17 @@
-const outputManifest = require('rollup-plugin-output-manifest').default;
+import outputManifest from 'rollup-plugin-output-manifest'
+import postcss from 'rollup-plugin-postcss'
 
-module.exports = {
+export default {
   input: {
     pageA: './page-a.js',
     pageB: './page-b.js',
     pageC: './page-c.js',
   },
-  plugins: [outputManifest()],
+  plugins: [postcss({extract: true}),outputManifest()],
   output: {
-    dir: './dist/',
     entryFileNames: '[name]-[hash].js',
-    format: 'commonjs',
+    assetFileNames: '[name]-[hash].[extname]',
+    dir: './dist/',
+    format: 'esm',
   },
 };
