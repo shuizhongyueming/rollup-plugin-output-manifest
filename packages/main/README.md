@@ -47,6 +47,12 @@ export default {
 };
 ```
 
+The type `Bundle` is an union of OutputChunk[1] and OutputAsset[2]
+
+```typescript
+type Bundle = OutputChunk | OutputAsset;
+```
+
 ### `options.fileName`
 
 Type: `String`
@@ -59,9 +65,17 @@ The manifest filename in your output directory.
 
 Type: `String`
 
-Default: `.js`
+Default: `''`
 
 The suffix for all keys in the manifest json object.
+
+### `options.nameWithExt`
+
+Type: `Boolean`
+
+Default: `true`,
+
+Set an ext for key which is same as the value in manifest json object. We add this option for support of assets which has different ext than the entry.
 
 ### `options.isMerge`
 
@@ -93,29 +107,46 @@ A path prefix for all keys. Useful for including your output path in the manifes
 
 ### `options.filter`
 
-Type: `(bundle: OutputChunk) => boolean`
+Type: `(bundle: Bundle) => boolean`
 
-Filter out chunks. [OutputChunk typings][1]
+Filter out chunks.
 
 ### `options.map`
 
-Type: `(bundle: OutputChunk) => OutputChunk`
+Type: `(bundle: Bundle) => Bundle`
 
-Modify chunk details before the manifest is created. [OutputChunk typings][1]
+Modify chunk details before the manifest is created.
 
 ### `options.sort`
 
-Type: `(bundleA: OutputChunk, bundleB: OutputChunk) => number`
+Type: `(bundleA: Bundle, bundleB: Bundle) => number`
 
-Sort chunk before they are passed to `generate`. [OutputChunk typings][1]
+Sort chunk before they are passed to `generate`.
+
+### `options.keyValueDecorator`
+
+Type: `(k: string, v: string, opt: OutputManifestParam) => {[k: string]: string}`
+
+You can set your own rule to set key/value.
 
 ### `options.generate`
 
-Type: `(keyValueDecorator: KeyValueDecorator, seed: object) => (chunks: OutputChunk[]) => object`
+Type: `(keyValueDecorator: KeyValueDecorator, seed: object, opt: OutputManifestParam) => (chunks: Bundle[]) => object`
 
-Default: `(keyValueDecorator: KeyValueDecorator, seed: object) => (chunks) => chunks.reduce((manifest, {name, fileName}) => ({...manifest, ...keyValueDecorator(name, fileName)}), seed)`
+Default:
 
-Create the manifest. It can return anything as long as it's serialisable by `JSON.stringify`. [OutputChunk typings][1]
+```typescript
+(keyValueDecorator: KeyValueDecorator, seed: object, opt: OutputManifestParam) => (chunks) =>
+  chunks.reduce(
+    (manifest, { name, fileName }) => ({
+      ...manifest,
+      ...keyValueDecorator(name, fileName, opt),
+    }),
+    seed
+  );
+```
+
+Create the manifest. It can return anything as long as it's serialisable by `JSON.stringify`.
 
 ### `options.serialize`
 
@@ -140,3 +171,4 @@ $ yarn test # for test
 MIT
 
 [1]: https://github.com/rollup/rollup/blob/e66d7be5e736e7b47c6e8ac5cb7c6365903baeff/src/rollup/types.d.ts#L497
+[2]: https://github.com/rollup/rollup/blob/e66d7be5e736e7b47c6e8ac5cb7c6365903baeff/src/rollup/types.d.ts#L469
