@@ -6,7 +6,7 @@
     "outDir": "./dist/",
     "declaration": true,
     "declarationDir": "./dist/",
-    "lib": ["es2017"],
+    "lib": ["ESNext"],
     "strict": true,
     "noImplicitAny": false,
     "charset": "utf8",

@@ -1,5 +1,5 @@
 import { rollup, InputOptions, OutputOptions } from "rollup";
-import outputManifest, { defaultSort, defaultGenerate, isChunk, isAsset } from "./index";
+import outputManifest, { defaultSort, defaultGenerate, isChunk, isAsset, defaultKeyValueDecorator } from "./index";
 import assert from "assert";
 import fs from "fs";
 import path from "path";
@@ -138,6 +138,29 @@ describe("outputManifest", function() {
         assert(typeof (json as any)["pageB.js.bk"] !== "undefined");
         assert(typeof (json as any)["pageC.js.bk"] !== "undefined");
       });
+
+      it("can omit the ext for name", async function() {
+        await run(
+          {
+            input: {
+              pageA: `${srcPath}/page-a.js`,
+              pageB: `${srcPath}/page-b.js`,
+              pageC: `${srcPath}/page-c.js`
+            },
+            plugins: [outputManifest({nameWithExt: false})]
+          },
+          {
+            dir: `${srcPath}/dist/`,
+            entryFileNames: "[name]-[hash].js",
+            format: "commonjs"
+          }
+        );
+        const json = await readJSON(distManifest);
+        assert(typeof (json as any)["pageA"] !== "undefined");
+        assert(typeof (json as any)["pageB"] !== "undefined");
+        assert(typeof (json as any)["pageC"] !== "undefined");
+      });
+
 
       it("can add publicPath for chunk", async function() {
         const publicPath = "https://www.test.com/some/path/";
@@ -406,6 +429,39 @@ describe("outputManifest", function() {
         assert(fileLines[1].indexOf("pageB.js") === 0);
         assert(fileLines[2].indexOf("pageC.js") === 0);
       });
+      it("can generate custom key/value of manifest", async function(){
+        await run(
+          {
+            input: {
+              pageA: `${srcPath}/page-a.js`,
+              pageB: `${srcPath}/page-b.js`,
+              pageC: `${srcPath}/page-c.js`
+            },
+            plugins: [
+              outputManifest({
+                keyValueDecorator: (k: string, v: string, opt) => {
+                  const res = defaultKeyValueDecorator(k,v,opt);
+                  Object.keys(res).forEach(k => {
+                    res[k.toUpperCase()] = res[k];
+                    delete res[k];
+                  });
+                  return res;
+                }
+              })
+            ]
+          },
+          {
+            dir: `${srcPath}/dist/`,
+            entryFileNames: "[name]-[hash].js",
+            format: "commonjs"
+          }
+        );
+
+        const json = await readJSON(distManifest);
+        assert(typeof (json as any)["PAGEA.JS"] !== "undefined");
+        assert(typeof (json as any)["PAGEB.JS"] !== "undefined");
+        assert(typeof (json as any)["PAGEC.JS"] !== "undefined");
+      })
     });
     describe("support output assets in manifest.json", function() {
       it("add css assets to manifest.json", async function () {
@@ -438,7 +494,8 @@ describe("outputManifest", function() {
           }
         );
         const json:any = await readJSON(distManifest);
-        assert(typeof json['pageWithCss.css'] !== 'undefined');
+        const hasNameOfCSS = Object.keys(json).some(name => /.css$/.test(name))
+        assert(hasNameOfCSS === true);
       });
     })
   });

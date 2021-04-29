@@ -50,12 +50,12 @@ export const defaultSort: NonUndefined<OutputManifestParam["sort"]> = (
   chunkB
 ) => (chunkA.fileName > chunkB.fileName ? 1 : -1);
 
-export const defaultKeyValueDecorator: KeyValueDecorator = (k: string, v: string, {basePath,publicPath,nameSuffix,nameWithExt,publicSuffix}: OutputManifestParam) => {
-        const n = basePath ? `${basePath}${k}` : k;
-        const f = publicPath ? `${publicPath}${v}` : v;
+export const defaultKeyValueDecorator: KeyValueDecorator = (k: string, v: string, {basePath = '',publicPath = '',nameSuffix = '',nameWithExt,publicSuffix = ''}: OutputManifestParam) => {
+        const n = `${basePath}${k}`;
+        const f = `${publicPath}${v}`;
         const ext = path.extname(f);
-        const key = `${n}${nameWithExt ? ext : ''}${nameSuffix}`
-        const value = `${f}${publicSuffix}`
+        const key = `${n}${nameWithExt ? ext : ''}${nameSuffix}`;
+        const value = `${f}${publicSuffix}`;
         return { [key]:  value};
       }
 
