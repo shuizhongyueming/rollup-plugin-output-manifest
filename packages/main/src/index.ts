@@ -6,6 +6,8 @@ import fs from "fs";
 
 export type Bundle = OutputAsset | OutputChunk;
 
+const PluginName = "rollup-plugin-output-manifest";
+
 export interface OutputManifestParam {
   fileName?: string;
   nameSuffix?: string;
@@ -14,21 +16,28 @@ export interface OutputManifestParam {
   publicSuffix?: string;
   basePath?: string;
   outputPath?: string;
-  filter?: (chunk: OutputChunk) => boolean;
-  map?: (chunk: OutputChunk) => OutputChunk;
-  sort?: (chunkA: OutputChunk, chunkB: OutputChunk) => number;
+  filter?: (chunk: Bundle) => boolean;
+  map?: (chunk: Bundle) => Bundle;
+  sort?: (chunkA: Bundle, chunkB: Bundle) => number;
   generate?: (
     keyValueDecorator: KeyValueDecorator,
     seed: object
-  ) => (chunks: OutputChunk[]) => object;
+  ) => (chunks: Bundle[]) => object;
   serialize?: (manifest: object) => string;
 }
 
 export type KeyValueDecorator = (k: string, v: string) => object;
 
+export const isChunk = (bundle: Bundle): bundle is OutputChunk => {
+  return bundle.type === 'chunk'
+}
+export const isAsset =  (bundle: Bundle): bundle is OutputAsset => {
+  return bundle.type === 'asset'
+}
+
 export const defaultFilter: NonUndefined<
   OutputManifestParam["filter"]
-> = chunk => chunk.isEntry;
+> = chunk => isAsset(chunk) || (isChunk(chunk) && (chunk as OutputChunk).isEntry);
 
 export const defaultMap: NonUndefined<OutputManifestParam["map"]> = chunk =>
   chunk;
@@ -36,7 +45,7 @@ export const defaultMap: NonUndefined<OutputManifestParam["map"]> = chunk =>
 export const defaultSort: NonUndefined<OutputManifestParam["sort"]> = (
   chunkA,
   chunkB
-) => (chunkA.name > chunkB.name ? 1 : -1);
+) => (chunkA.fileName > chunkB.fileName ? 1 : -1);
 
 export const defaultGenerate: NonUndefined<OutputManifestParam["generate"]> = (
   keyValueDecorator,
@@ -44,10 +53,14 @@ export const defaultGenerate: NonUndefined<OutputManifestParam["generate"]> = (
 ) => chunks =>
   chunks.reduce((json, chunk) => {
     const { name, fileName } = chunk;
-    return {
-      ...json,
-      ...keyValueDecorator(name, fileName)
-    };
+    if (name) {
+      return {
+        ...json,
+        ...keyValueDecorator(name, fileName)
+      };
+    }
+    console.warn(`Warn: output file ${fileName} has no releated origin name, so omit it`);
+    return json
   }, seed);
 
 export const defaultSerialize: NonUndefined<
@@ -57,7 +70,7 @@ export const defaultSerialize: NonUndefined<
 export default function outputManifest(param?: OutputManifestParam): Plugin {
   const {
     fileName = "manifest.json",
-    nameSuffix = ".js",
+    nameSuffix = "",
     publicPath = "",
     publicSuffix = "",
     basePath = "",
@@ -71,8 +84,8 @@ export default function outputManifest(param?: OutputManifestParam): Plugin {
   } = (param || {}) as OutputManifestParam;
 
   return {
-    name: "rollup-plugin-output-manifest",
-    generateBundle: async (options: NormalizedOutputOptions, bundle: OutputBundle) => {
+    name: PluginName,
+    generateBundle: async function (options: NormalizedOutputOptions, bundle: OutputBundle) {
       let targetDir: string | undefined;
       if (outputPath) {
         targetDir = outputPath;
@@ -97,12 +110,7 @@ export default function outputManifest(param?: OutputManifestParam): Plugin {
       const serializeFunc = serialize || defaultSerialize;
 
       let chunks = Object.values(bundle)
-        // only output chunk, because asset has no attribute name
-        .filter(
-          bundle => typeof (bundle as OutputChunk).name !== "undefined"
-        ) as OutputChunk[];
-
-      chunks = chunks.filter(filterFunc);
+        .filter(filterFunc);
 
       let seed = {};
       const workspace = process.cwd();
@@ -119,7 +127,8 @@ export default function outputManifest(param?: OutputManifestParam): Plugin {
       function keyValueDecorator(k: string, v: string) {
         const n = basePath ? `${basePath}${k}` : k;
         const f = publicPath ? `${publicPath}${v}` : v;
-        return { [`${n}${nameSuffix}`]: `${f}${publicSuffix}` };
+        const ext = path.extname(f);
+        return { [`${n}${ext}${nameSuffix}`]: `${f}${publicSuffix}` };
       }
 
       let manifestObj = generateFunc(keyValueDecorator, seed)(
@@ -136,6 +145,6 @@ export default function outputManifest(param?: OutputManifestParam): Plugin {
       } catch (e) {
         throw e;
       }
-    }
+    },
   };
 }

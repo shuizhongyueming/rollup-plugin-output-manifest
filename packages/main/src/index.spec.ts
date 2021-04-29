@@ -1,11 +1,12 @@
 import { rollup, InputOptions, OutputOptions } from "rollup";
-import outputManifest, { defaultSort, defaultGenerate } from "./index";
+import outputManifest, { defaultSort, defaultGenerate, isChunk, isAsset } from "./index";
 import assert from "assert";
 import fs from "fs";
 import path from "path";
 import rimraf from "rimraf";
 import { readJSON } from "./utils";
 import YAML from "json-to-pretty-yaml";
+import postcss from 'rollup-plugin-postcss'
 
 const srcPath = path.resolve(__dirname, '../../example/');
 const distPath = path.resolve(__dirname, "../../example/dist/");
@@ -124,7 +125,7 @@ describe("outputManifest", function() {
               pageB: `${srcPath}/page-b.js`,
               pageC: `${srcPath}/page-c.js`
             },
-            plugins: [outputManifest({ nameSuffix: "" })]
+            plugins: [outputManifest({ nameSuffix: ".bk" })]
           },
           {
             dir: `${srcPath}/dist/`,
@@ -133,9 +134,9 @@ describe("outputManifest", function() {
           }
         );
         const json = await readJSON(distManifest);
-        assert(typeof (json as any)["pageA"] !== "undefined");
-        assert(typeof (json as any)["pageB"] !== "undefined");
-        assert(typeof (json as any)["pageC"] !== "undefined");
+        assert(typeof (json as any)["pageA.js.bk"] !== "undefined");
+        assert(typeof (json as any)["pageB.js.bk"] !== "undefined");
+        assert(typeof (json as any)["pageC.js.bk"] !== "undefined");
       });
 
       it("can add publicPath for chunk", async function() {
@@ -266,7 +267,7 @@ describe("outputManifest", function() {
             },
             plugins: [
               outputManifest({
-                filter: chunk => chunk.isEntry && chunk.name !== "pageA"
+                filter: chunk => isChunk(chunk) && chunk.isEntry && chunk.name !== "pageA"
               })
             ]
           },
@@ -293,7 +294,7 @@ describe("outputManifest", function() {
             },
             plugins: [
               outputManifest({
-                map: chunk => ({ ...chunk, name: chunk.name.toUpperCase() })
+                map: chunk => ({ ...chunk, name: chunk.name ? chunk.name.toUpperCase() : '' })
               })
             ]
           },
@@ -406,5 +407,40 @@ describe("outputManifest", function() {
         assert(fileLines[2].indexOf("pageC.js") === 0);
       });
     });
+    describe("support output assets in manifest.json", function() {
+      it("add css assets to manifest.json", async function () {
+        await run(
+          {
+            input: {
+              pageWithCss: `${srcPath}/page-with-css.js`
+            },
+            plugins: [
+              postcss({extract: true}),
+              outputManifest({
+                fileName: "manifest.json",
+                map: bundle => {
+                  if (isAsset(bundle) && !bundle.name) {
+                    // gen name from fileName
+                    // base on output.assetFileNames
+                    const baseName = bundle.fileName.split('-')[0];
+                    bundle.name = baseName;
+                  }
+                  return bundle;
+                }
+              })
+            ]
+          },
+          {
+            dir: `${srcPath}/dist/`,
+            entryFileNames: "[name]-[hash].js",
+            assetFileNames: '[name]-[hash].[extname]',
+            format: "commonjs"
+          }
+        );
+        const json:any = await readJSON(distManifest);
+        assert(typeof json['pageWithCss.css'] !== 'undefined');
+      });
+    })
   });
+
 });
