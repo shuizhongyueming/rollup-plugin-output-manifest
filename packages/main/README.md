@@ -21,8 +21,8 @@ export default {
   plugins: [
     // ...
     outputManifest(),
-  ]
-}
+  ],
+};
 ```
 
 This will generate a `manifest.json` file in your root output directory with a mapping of all source file names to their corresponding output file, for example:
@@ -43,8 +43,8 @@ export default {
   plugins: [
     // ...
     outputManifest(options),
-  ]
-}
+  ],
+};
 ```
 
 ### `options.fileName`
@@ -97,7 +97,6 @@ Type: `(bundle: OutputChunk) => boolean`
 
 Filter out chunks. [OutputChunk typings][1]
 
-
 ### `options.map`
 
 Type: `(bundle: OutputChunk) => OutputChunk`
@@ -141,4 +140,3 @@ $ yarn test # for test
 MIT
 
 [1]: https://github.com/rollup/rollup/blob/e66d7be5e736e7b47c6e8ac5cb7c6365903baeff/src/rollup/types.d.ts#L497
-
