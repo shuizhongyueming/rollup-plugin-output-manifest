@@ -79,6 +79,12 @@ Default: `outputOptions.dir || path.dirname(outputOptions.file)`
 
 A path prefix that will be added to values of the manifest.
 
+### `options.publicSuffix`
+
+Type: `String`
+
+A suffix that will be added to values of the manifest. Useful for adding a query string, for example.
+
 ### `options.basePath`
 
 Type: `String`

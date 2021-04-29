@@ -160,6 +160,28 @@ describe("outputManifest", function() {
         assert(res);
       });
 
+      it("can add publicSuffix for chunk", async function() {
+        const publicSuffix = "?version=test";
+        await run(
+          {
+            input: {
+              pageA: `${srcPath}/page-a.js`,
+              pageB: `${srcPath}/page-b.js`,
+              pageC: `${srcPath}/page-c.js`
+            },
+            plugins: [outputManifest({ publicSuffix })]
+          },
+          {
+            dir: `${srcPath}/dist/`,
+            entryFileNames: "[name]-[hash].js",
+            format: "commonjs"
+          }
+        );
+        const json = await readJSON(distManifest);
+        const res = Object.values(json).every((p: string) => p.endsWith(publicSuffix));
+        assert(res);
+      });
+
       it("can add basePath for name key", async function() {
         const basePath = "site/";
         await run(
