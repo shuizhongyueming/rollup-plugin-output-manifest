@@ -33,6 +33,8 @@ This will generate a `manifest.json` file in your root output directory with a m
 }
 ```
 
+More examples you can look at the `index.spec.ts`
+
 ## API
 
 ```javascript
@@ -137,16 +139,20 @@ Default:
 
 ```typescript
 (keyValueDecorator: KeyValueDecorator, seed: object, opt: OutputManifestParam) => (chunks) =>
-  chunks.reduce(
-    (manifest, { name, fileName }) => ({
-      ...manifest,
-      ...keyValueDecorator(name, fileName, opt),
-    }),
-    seed
-  );
+  chunks.reduce((manifest, { name, fileName }) => {
+    if (name) {
+      return {
+        ...manifest,
+        ...keyValueDecorator(name, fileName, opt),
+      };
+    }
+    return manifest;
+  }, seed);
 ```
 
 Create the manifest. It can return anything as long as it's serialisable by `JSON.stringify`.
+
+By default, Bundle without an `name` attribute will be omitted;
 
 ### `options.serialize`
 
