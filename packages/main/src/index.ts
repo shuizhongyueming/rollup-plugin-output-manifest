@@ -1,4 +1,4 @@
-import { OutputAsset, OutputChunk, OutputBundle, OutputOptions } from "rollup";
+import { OutputAsset, OutputChunk, OutputBundle, Plugin, NormalizedOutputOptions } from "rollup";
 import { NonUndefined } from "utility-types";
 import path from "path";
 import { readJSON } from "./utils";
@@ -54,7 +54,7 @@ export const defaultSerialize: NonUndefined<
   OutputManifestParam["serialize"]
 > = manifest => JSON.stringify(manifest, null, 2);
 
-export default function outputManifest(param?: OutputManifestParam) {
+export default function outputManifest(param?: OutputManifestParam): Plugin {
   const {
     fileName = "manifest.json",
     nameSuffix = ".js",
@@ -72,7 +72,7 @@ export default function outputManifest(param?: OutputManifestParam) {
 
   return {
     name: "rollup-plugin-output-manifest",
-    generateBundle: async (options: OutputOptions, bundle: OutputBundle) => {
+    generateBundle: async (options: NormalizedOutputOptions, bundle: OutputBundle) => {
       let targetDir: string | undefined;
       if (outputPath) {
         targetDir = outputPath;
