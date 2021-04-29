@@ -356,11 +356,11 @@ describe("outputManifest", function() {
             },
             plugins: [
               outputManifest({
-                generate: (keyValueDecorator, seed) =>
+                generate: (keyValueDecorator, seed, opt) =>
                   defaultGenerate(keyValueDecorator, {
                     ...seed,
                     [existsKey]: existsValue
-                  })
+                  },opt)
               })
             ]
           },

@@ -11,6 +11,7 @@ const PluginName = "rollup-plugin-output-manifest";
 export interface OutputManifestParam {
   fileName?: string;
   nameSuffix?: string;
+  nameWithExt?: boolean;
   isMerge?: boolean;
   publicPath?: string;
   publicSuffix?: string;
@@ -19,14 +20,16 @@ export interface OutputManifestParam {
   filter?: (chunk: Bundle) => boolean;
   map?: (chunk: Bundle) => Bundle;
   sort?: (chunkA: Bundle, chunkB: Bundle) => number;
+  keyValueDecorator?: KeyValueDecorator;
   generate?: (
     keyValueDecorator: KeyValueDecorator,
-    seed: object
+    seed: object,
+    opt: OutputManifestParam
   ) => (chunks: Bundle[]) => object;
   serialize?: (manifest: object) => string;
 }
 
-export type KeyValueDecorator = (k: string, v: string) => object;
+export type KeyValueDecorator = (k: string, v: string, opt: OutputManifestParam) => {[k: string]: string};
 
 export const isChunk = (bundle: Bundle): bundle is OutputChunk => {
   return bundle.type === 'chunk'
@@ -47,16 +50,26 @@ export const defaultSort: NonUndefined<OutputManifestParam["sort"]> = (
   chunkB
 ) => (chunkA.fileName > chunkB.fileName ? 1 : -1);
 
+export const defaultKeyValueDecorator: KeyValueDecorator = (k: string, v: string, {basePath,publicPath,nameSuffix,nameWithExt,publicSuffix}: OutputManifestParam) => {
+        const n = basePath ? `${basePath}${k}` : k;
+        const f = publicPath ? `${publicPath}${v}` : v;
+        const ext = path.extname(f);
+        const key = `${n}${nameWithExt ? ext : ''}${nameSuffix}`
+        const value = `${f}${publicSuffix}`
+        return { [key]:  value};
+      }
+
 export const defaultGenerate: NonUndefined<OutputManifestParam["generate"]> = (
   keyValueDecorator,
-  seed
+  seed,
+  opt
 ) => chunks =>
   chunks.reduce((json, chunk) => {
     const { name, fileName } = chunk;
     if (name) {
       return {
         ...json,
-        ...keyValueDecorator(name, fileName)
+        ...keyValueDecorator(name, fileName, opt)
       };
     }
     console.warn(`Warn: output file ${fileName} has no releated origin name, so omit it`);
@@ -70,17 +83,15 @@ export const defaultSerialize: NonUndefined<
 export default function outputManifest(param?: OutputManifestParam): Plugin {
   const {
     fileName = "manifest.json",
-    nameSuffix = "",
-    publicPath = "",
-    publicSuffix = "",
-    basePath = "",
     isMerge = false,
+    nameWithExt = true,
     outputPath,
     filter,
     map,
     sort,
     generate,
-    serialize
+    serialize,
+    keyValueDecorator,
   } = (param || {}) as OutputManifestParam;
 
   return {
@@ -108,6 +119,7 @@ export default function outputManifest(param?: OutputManifestParam): Plugin {
       const sortFunc = sort || defaultSort;
       const generateFunc = generate || defaultGenerate;
       const serializeFunc = serialize || defaultSerialize;
+      const keyValueDecoratorFunc = keyValueDecorator || defaultKeyValueDecorator;
 
       let chunks = Object.values(bundle)
         .filter(filterFunc);
@@ -124,14 +136,13 @@ export default function outputManifest(param?: OutputManifestParam): Plugin {
         }
       }
 
-      function keyValueDecorator(k: string, v: string) {
-        const n = basePath ? `${basePath}${k}` : k;
-        const f = publicPath ? `${publicPath}${v}` : v;
-        const ext = path.extname(f);
-        return { [`${n}${ext}${nameSuffix}`]: `${f}${publicSuffix}` };
-      }
 
-      let manifestObj = generateFunc(keyValueDecorator, seed)(
+      let manifestObj = generateFunc(keyValueDecoratorFunc, seed, {
+        ...(param || {}),
+        fileName,
+        nameWithExt,
+        isMerge
+      })(
         chunks.sort(sortFunc).map(mapFunc)
       );
 
