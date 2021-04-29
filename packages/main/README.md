@@ -123,7 +123,7 @@ Type: `(manifest: object) => string`
 
 Default: `(manifest) => JSON.stringify(manifest, null, 2)`
 
-Output manifest file in different format then json (i.e. yaml).
+Output manifest file in different format then json (e.g. yaml).
 
 ## Contribution
 
