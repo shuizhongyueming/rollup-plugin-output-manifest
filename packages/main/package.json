@@ -23,7 +23,7 @@
   "devDependencies": {
     "@types/mocha": "^5.2.7",
     "json-to-pretty-yaml": "^1.2.2",
-    "mocha": "^7.1.0",
+    "mocha": "^8.3.2",
     "rimraf": "^2.6.3",
     "rollup": "^2.0.6",
     "ts-node": "^8.3.0",
