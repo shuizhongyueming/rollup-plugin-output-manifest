@@ -72,7 +72,7 @@ export const defaultGenerate: NonUndefined<OutputManifestParam["generate"]> = (
         ...keyValueDecorator(name, fileName, opt)
       };
     }
-    console.warn(`Warn: output file ${fileName} has no releated origin name, so omit it`);
+    console.warn(`Warn: output file ${fileName} has no related origin name, so omit it`);
     return json
   }, seed);
 
