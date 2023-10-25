@@ -8,7 +8,7 @@
   },
   "author": "",
   "dependencies": {
-    "postcss": "^8.2.13",
+    "postcss": "^8.4.31",
     "rollup": "^2.46.0",
     "rollup-plugin-postcss": "^4.0.0"
   },
