@@ -1,0 +1,7 @@
+{
+  "name": "rollup-plugin-output-manifest-package-surface-prototype",
+  "private": true,
+  "scripts": {
+    "prototype": "npm exec --yes --package=typescript@npm:@typescript/typescript6@6.0.2 -- node verify.mjs"
+  }
+}
